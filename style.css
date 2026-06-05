@@ -1,14 +1,14 @@
 :root {
-    --bg-color: #0f172a; /* Dark Navy */
-    --panel-bg: #1e293b;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --accent: #3b82f6;
-    --accent-hover: #60a5fa;
-    --success: #10b981;
-    --border: #334155;
-    --input-bg: rgba(0, 0, 0, 0.25);
-    --shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    --bg-color: #fdfbf7; /* 따뜻하고 밝은 아이보리/오프화이트 */
+    --panel-bg: #ffffff;
+    --text-primary: #3d3b38; /* 너무 까맣지 않은 부드러운 다크 그레이/브라운 */
+    --text-secondary: #8c857d;
+    --accent: #c4a482; /* 차분하고 따뜻한 베이지/카라멜 톤 */
+    --accent-hover: #ad8c69;
+    --success: #8ba888; /* 따뜻한 세이지 그린 */
+    --border: #f0e9df;
+    --input-bg: #fbf9f5;
+    --shadow: 0 15px 35px -5px rgba(140, 125, 110, 0.1);
     --border-radius: 20px;
     --transition: all 0.25s ease;
 }
@@ -22,8 +22,8 @@
 body {
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
     background-color: var(--bg-color);
-    background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 400px),
-                      radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.05), transparent 400px);
+    background-image: radial-gradient(circle at top right, rgba(196, 164, 130, 0.08), transparent 400px),
+                      radial-gradient(circle at bottom left, rgba(139, 168, 136, 0.05), transparent 400px);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -35,11 +35,11 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 600px; /* 폼 중심이므로 너비 축소 */
+    max-width: 600px;
     background: var(--panel-bg);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -49,16 +49,14 @@ body {
     text-align: center;
     padding: 40px 30px 20px;
     border-bottom: 1px solid var(--border);
-    background: rgba(0,0,0,0.1);
+    background: #fcfaf8;
 }
 
 .form-header h1 {
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, #60a5fa, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .form-header p {
@@ -124,9 +122,9 @@ input[type="file"] {
 }
 
 input[type="file"]::file-selector-button {
-    background: var(--border);
+    background: white;
     color: var(--text-primary);
-    border: none;
+    border: 1px solid var(--border);
     padding: 8px 16px;
     border-radius: 6px;
     margin-right: 15px;
@@ -136,13 +134,15 @@ input[type="file"]::file-selector-button {
 }
 
 input[type="file"]::file-selector-button:hover {
-    background: var(--accent);
+    background: var(--input-bg);
+    border-color: var(--accent);
 }
 
 input[type="text"]:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 3px rgba(196, 164, 130, 0.2);
+    background: white;
 }
 
 .signature-header {
@@ -161,7 +161,7 @@ input[type="text"]:focus {
 }
 
 .btn-text:hover {
-    color: var(--text-primary);
+    color: var(--accent-hover);
 }
 
 .canvas-wrapper {
@@ -209,7 +209,7 @@ canvas {
 .btn-primary:hover {
     background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 8px 20px rgba(196, 164, 130, 0.3);
 }
 
 .btn-primary:active {
@@ -231,7 +231,7 @@ canvas {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(5px);
     display: flex;
     flex-direction: column;
@@ -258,7 +258,7 @@ canvas {
 .spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid rgba(255, 255, 255, 0.1);
+    border: 5px solid rgba(196, 164, 130, 0.2);
     border-radius: 50%;
     border-top-color: var(--accent);
     animation: spin 1s ease-in-out infinite;
