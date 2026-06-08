@@ -373,33 +373,6 @@ body {
     color: #555;
 }
 
-/* 인쇄용 스타일 수정 */
-@media print {
-    body {
-        background-color: white;
-        padding: 0;
-        min-height: auto;
-    }
-    .print-container {
-        box-shadow: none;
-        width: 100%;
-        min-height: auto;
-        padding: 0;
-        margin: 0;
-        display: block !important; /* 강제 표시 */
-    }
-    .no-print {
-        display: none !important;
-    }
-    #setup-section, #qr-modal, .overlay {
-        display: none !important;
-    }
-    .signature-table th {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
-
 .overlay.show {
     opacity: 1;
     pointer-events: auto;
@@ -430,8 +403,18 @@ body {
     .no-print {
         display: none !important;
     }
+    #setup-section, #qr-modal, .overlay {
+        display: none !important;
+    }
     .signature-table th {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+    tr {
+        page-break-inside: avoid;
+    }
+    @page {
+        margin: 15mm;
+        size: A4 portrait;
     }
 }

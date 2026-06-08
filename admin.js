@@ -306,40 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(fileDownload);
     });
 
-    // PDF 저장 기능
-    document.getElementById('btn-export-pdf').addEventListener('click', () => {
-        const element = document.getElementById('preview-section');
-        const controls = element.querySelector('.controls');
-        controls.style.display = 'none'; // 임시 숨김
-        
-        const opt = {
-            margin:       10,
-            filename:     '연수등록부.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, windowWidth: 1000 },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        html2pdf().set(opt).from(element).save().then(() => {
-            controls.style.display = 'flex'; // 다시 표시
-        });
-    });
-
-    // 이미지 저장 기능
-    document.getElementById('btn-export-img').addEventListener('click', () => {
-        const element = document.getElementById('preview-section');
-        const controls = element.querySelector('.controls');
-        controls.style.display = 'none'; // 임시 숨김
-        
-        html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = '연수등록부.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            controls.style.display = 'flex'; // 다시 표시
-        });
-    });
-
     // '닫기' 버튼
     document.getElementById('btn-close-qr').addEventListener('click', () => {
         qrModal.style.display = 'none';
