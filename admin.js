@@ -1,11 +1,12 @@
-// GAS URL (script.js에 있는 것과 동일한 URL을 입력해야 합니다)
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx06kuxhrgzTklYTw4YqG0rxLhlVa_BUIJ0-EdHq7pPP_sfHRkGB42Xl5susO5g8kEsYA/exec";
+// 기본 제공 혜정샘의 GAS URL (초기값용)
+const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbx06kuxhrgzTklYTw4YqG0rxLhlVa_BUIJ0-EdHq7pPP_sfHRkGB42Xl5susO5g8kEsYA/exec";
 
 // DOM 요소들
 const setupSection = document.getElementById('setup-section');
 const previewSection = document.getElementById('preview-section');
 const qrModal = document.getElementById('qr-modal');
 
+const inputGasUrl = document.getElementById('input-gas-url');
 const inputMode = document.getElementById('input-mode');
 const inputTitle = document.getElementById('input-title');
 const inputDate = document.getElementById('input-date');
@@ -27,6 +28,11 @@ function loadSettings() {
     if (saved) {
         try {
             const data = JSON.parse(saved);
+            if (data.gasUrl !== undefined) {
+                inputGasUrl.value = data.gasUrl;
+            } else {
+                inputGasUrl.value = DEFAULT_GAS_URL;
+            }
             if (data.mode) inputMode.value = data.mode;
             if (data.title) inputTitle.value = data.title;
             if (data.date) inputDate.value = data.date;
@@ -42,6 +48,7 @@ function loadSettings() {
 
 function saveSettings() {
     const data = {
+        gasUrl: inputGasUrl.value,
         mode: inputMode.value,
         title: inputTitle.value,
         date: inputDate.value,
@@ -54,7 +61,7 @@ function saveSettings() {
 }
 
 // 실시간 자동 저장 이벤트
-[inputMode, inputTitle, inputDate, inputTime, inputTimeEnd, inputLocation, inputNames].forEach(el => {
+[inputGasUrl, inputMode, inputTitle, inputDate, inputTime, inputTimeEnd, inputLocation, inputNames].forEach(el => {
     if (el) el.addEventListener('input', saveSettings);
 });
 
@@ -119,18 +126,20 @@ function renderTable() {
     }
 }
 
-// --- 3. 구글 시트에서 서명 데이터 불러오기 ---
+// --- 3. 서명 데이터 가져오기 ---
 async function fetchSignatures() {
-    if (!GAS_URL || GAS_URL.includes("여기에_구글")) {
-        alert("Google Apps Script URL이 설정되지 않았습니다.");
-        return;
+    const btn = document.getElementById('refresh-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ 불러오는 중...";
+    btn.disabled = true;
+
+    let targetUrl = inputGasUrl.value.trim();
+    if (!targetUrl) {
+        targetUrl = DEFAULT_GAS_URL;
     }
 
-    const overlay = document.getElementById('loading-overlay');
-    overlay.classList.add('show');
-
     try {
-        const response = await fetch(GAS_URL);
+        const response = await fetch(targetUrl);
         const result = await response.json();
 
         if (result.status === 'success') {
@@ -207,10 +216,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-show-qr').addEventListener('click', () => {
         saveSettings();
         
-        // 이름 목록 파싱
+        // 이름 목록 파싱 및 Base64 암호화
         const rawNames = inputNames.value.split('\n').map(n => n.trim()).filter(n => n.length > 0);
-        const namesParam = encodeURIComponent(rawNames.join(','));
+        // UTF-8 문자열을 Base64로 안전하게 인코딩 (한글 깨짐 방지)
+        const encodedNames = btoa(unescape(encodeURIComponent(rawNames.join(','))));
+        const namesParam = encodeURIComponent(encodedNames);
         
+        // GAS URL에서 스크립트 ID 추출
+        let scriptId = '';
+        const urlValue = inputGasUrl.value.trim() || DEFAULT_GAS_URL;
+        const match = urlValue.match(/\/s\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+            scriptId = match[1];
+        }
+
         // URL을 안전하게 조합
         try {
             const urlObj = new URL(window.location.href);
@@ -220,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (!urlObj.pathname.endsWith('index.html')) {
                 urlObj.pathname = urlObj.pathname + (urlObj.pathname.endsWith('/') ? '' : '/') + 'index.html';
             }
-            urlObj.search = `?m=${inputMode.value}&n=${namesParam}`;
+            urlObj.search = `?m=${inputMode.value}&g=${scriptId}&n=${namesParam}`;
             const shareUrl = urlObj.href;
             
             document.getElementById('share-link').value = shareUrl;

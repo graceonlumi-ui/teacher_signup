@@ -73,8 +73,17 @@ function clearSignature() {
 setTimeout(resizeCanvas, 100); // 렌더링 완료 후 크기 조정
 
 // --- URL 파라미터에서 명단 파싱 및 드롭다운 채우기 ---
+// 전역 변수로 GAS_URL 선언 (이전 하드코딩 제거)
+let GAS_URL = "https://script.google.com/macros/s/AKfycbx06kuxhrgzTklYTw4YqG0rxLhlVa_BUIJ0-EdHq7pPP_sfHRkGB42Xl5susO5g8kEsYA/exec";
+
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
+    
+    // 1. 구글 스크립트 URL 설정 (공용 버전)
+    const gParam = params.get('g');
+    if (gParam) {
+        GAS_URL = `https://script.google.com/macros/s/${gParam}/exec`;
+    }
     
     // 모드 설정 (both, sign, file)
     const mode = params.get('m') || 'both';
@@ -103,7 +112,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameSelect = document.getElementById('student-name');
     
     if (namesParam) {
-        const names = namesParam.split(',');
+        let namesStr = "";
+        try {
+            // 암호화된 Base64 문자열 복호화 (한글 깨짐 방지 처리)
+            namesStr = decodeURIComponent(escape(atob(namesParam)));
+        } catch (e) {
+            // 구버전(암호화되지 않은 URL) 호환성 유지
+            namesStr = namesParam;
+        }
+
+        const names = namesStr.split(',');
         names.forEach(name => {
             const trimmed = name.trim();
             if(trimmed !== '') {
@@ -121,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- Google Apps Script 전송 로직 ---
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx06kuxhrgzTklYTw4YqG0rxLhlVa_BUIJ0-EdHq7pPP_sfHRkGB42Xl5susO5g8kEsYA/exec";
 
 document.getElementById('submit-form').addEventListener('submit', async function (e) {
     e.preventDefault();
