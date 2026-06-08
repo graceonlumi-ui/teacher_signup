@@ -76,3 +76,45 @@ function doOptions(e) {
     .setMimeType(ContentService.MimeType.TEXT)
     .setHeaders(headers);
 }
+
+// GET 메서드: 관리자 페이지에서 서명 데이터 조회용
+function doGet(e) {
+  var output = ContentService.createTextOutput();
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    // 데이터가 있는 범위 모두 가져오기
+    var data = sheet.getDataRange().getValues();
+    
+    var results = [];
+    // 첫 번째 줄(index 0)은 헤더이므로 두 번째 줄(index 1)부터 시작
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      // row[2] = 성명, row[4] = 서명 확인 (URL)
+      var name = row[2];
+      var signatureUrl = row[4];
+      
+      results.push({
+        name: name,
+        signatureUrl: signatureUrl
+      });
+    }
+    
+    var response = {
+      "status": "success",
+      "data": results
+    };
+    
+    output.setContent(JSON.stringify(response));
+    return output;
+    
+  } catch (error) {
+    var response = {
+      "status": "error",
+      "message": error.toString()
+    };
+    output.setContent(JSON.stringify(response));
+    return output;
+  }
+}

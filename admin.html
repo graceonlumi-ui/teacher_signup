@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연수 등록부 관리자 페이지</title>
+    <!-- 폰트 및 스타일 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <!-- QR 코드 및 문서 저장 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <!-- 1. 관리자 설정 화면 (기본 표시) -->
+    <div id="setup-section" class="setup-container no-print">
+        <header class="setup-header">
+            <h1>⚙️ 연수 등록부 설정</h1>
+            <p>연수 정보와 명단을 입력해 주세요.</p>
+        </header>
+
+        <div class="setup-form">
+            <div class="form-group">
+                <label>수집 방식 (사용자 화면 설정)</label>
+                <select id="input-mode" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; font-family: inherit;">
+                    <option value="both" selected>서명 + 첨부파일 모두 받기</option>
+                    <option value="sign">서명만 받기</option>
+                    <option value="file">첨부파일만 받기</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>연수 제목</label>
+                <input type="text" id="input-title" placeholder="예: 2026학년도 학업성적관리규정 연수 등록부">
+            </div>
+            
+            <div class="form-group datetime-group">
+                <label>일시 (종료시간은 선택사항)</label>
+                <div class="datetime-inputs">
+                    <input type="date" id="input-date">
+                    <input type="time" id="input-time" title="시작 시간">
+                    <span class="time-separator">~</span>
+                    <input type="time" id="input-time-end" title="종료 시간">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>장소</label>
+                <input type="text" id="input-location" placeholder="예: 수당실">
+            </div>
+
+            <div class="form-group">
+                <label>선생님 명단 (엑셀에서 이름 열만 복사해서 붙여넣으세요)</label>
+                <textarea id="input-names" placeholder="홍길동&#10;김철수&#10;이영희... (줄바꿈으로 구분)"></textarea>
+                <p class="help-text">* 순번은 자동으로 매겨집니다.</p>
+            </div>
+
+            <div class="setup-actions">
+                <button type="button" class="btn btn-outline" id="btn-show-qr">🔗 QR코드 및 링크 공유</button>
+                <button type="button" class="btn btn-primary" id="btn-preview">📄 연수 등록부 미리보기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 미리보기 화면 (처음엔 숨김) -->
+    <div id="preview-section" class="print-container" style="display: none;">
+        <header class="document-header">
+            <h1 id="doc-title" contenteditable="true">제목</h1>
+            <div class="document-info">
+                <p id="doc-date" contenteditable="true">1. 일시: </p>
+                <p id="doc-location" contenteditable="true">2. 장소: </p>
+            </div>
+        </header>
+
+        <table class="signature-table">
+            <thead>
+                <tr>
+                    <th class="col-num">순</th>
+                    <th class="col-name">성명</th>
+                    <th class="col-sign">서명</th>
+                    <th class="col-remark">비고</th>
+                    <th class="col-num">순</th>
+                    <th class="col-name">성명</th>
+                    <th class="col-sign">서명</th>
+                    <th class="col-remark">비고</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Javascript로 행이 동적으로 추가됩니다 -->
+            </tbody>
+        </table>
+        
+        <div class="controls no-print">
+            <button id="btn-back" class="btn btn-outline">⬅️ 설정으로 돌아가기</button>
+            <button id="refresh-btn" class="btn btn-primary">🔄 서명 새로고침</button>
+            
+            <div class="export-group">
+                <button id="btn-export-doc" class="btn btn-secondary">💾 워드</button>
+                <button id="btn-export-pdf" class="btn btn-secondary">📄 PDF</button>
+                <button id="btn-export-img" class="btn btn-secondary">🖼️ 이미지</button>
+            </div>
+            
+            <button onclick="window.print()" class="btn btn-outline print-btn">🖨️ 인쇄하기 (Ctrl+P)</button>
+            <p class="help-text" style="width: 100%; margin-top: 15px;">* 표 안의 글자를 클릭하면 직접 내용을 수정할 수 있습니다.</p>
+        </div>
+    </div>
+
+    <!-- QR 코드 모달 팝업 -->
+    <div id="qr-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>📱 선생님들께 공유하기</h2>
+            <p>아래 QR 코드를 화면에 띄워두거나 링크를 공유해 주세요.</p>
+            
+            <div id="qrcode-box"></div>
+            
+            <div class="link-box">
+                <input type="text" id="share-link" readonly>
+                <button type="button" id="btn-copy-link" class="btn btn-primary">복사</button>
+            </div>
+            
+            <button type="button" id="btn-close-qr" class="btn btn-outline">닫기</button>
+        </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div class="overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <p>데이터를 불러오는 중입니다...</p>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

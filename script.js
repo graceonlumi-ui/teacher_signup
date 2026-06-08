@@ -28,10 +28,10 @@ function stopDrawing() {
 
 function draw(e) {
     if (!isDrawing) return;
-    
+
     e.preventDefault(); // 모바일 스크롤 방지
     const rect = canvas.getBoundingClientRect();
-    
+
     // 터치 또는 마우스 좌표 가져오기
     let clientX, clientY;
     if (e.type.includes('touch')) {
@@ -41,14 +41,14 @@ function draw(e) {
         clientX = e.clientX;
         clientY = e.clientY;
     }
-    
+
     const x = clientX - rect.left;
     const y = clientY - rect.top;
-    
-    ctx.lineWidth = 3;
+
+    ctx.lineWidth = 6;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
-    
+
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
@@ -60,8 +60,8 @@ canvas.addEventListener('mousemove', draw);
 canvas.addEventListener('mouseup', stopDrawing);
 canvas.addEventListener('mouseout', stopDrawing);
 
-canvas.addEventListener('touchstart', startDrawing, {passive: false});
-canvas.addEventListener('touchmove', draw, {passive: false});
+canvas.addEventListener('touchstart', startDrawing, { passive: false });
+canvas.addEventListener('touchmove', draw, { passive: false });
 canvas.addEventListener('touchend', stopDrawing);
 
 function clearSignature() {
@@ -72,14 +72,60 @@ function clearSignature() {
 // 초기화 호출
 setTimeout(resizeCanvas, 100); // 렌더링 완료 후 크기 조정
 
+// --- URL 파라미터에서 명단 파싱 및 드롭다운 채우기 ---
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    
+    // 모드 설정 (both, sign, file)
+    const mode = params.get('m') || 'both';
+    const groupSignature = document.getElementById('group-signature');
+    const groupFile = document.getElementById('group-file');
+    const mainTitle = document.getElementById('main-title');
+    const subTitle = document.getElementById('sub-title');
+    const uploadFile = document.getElementById('upload-file');
+    const labelFile = uploadFile.previousElementSibling;
+
+    if (mode === 'sign') {
+        groupFile.style.display = 'none';
+        subTitle.innerText = "이름을 선택하고 서명해 주세요.";
+    } else if (mode === 'file') {
+        groupSignature.style.display = 'none';
+        mainTitle.innerText = "📁 자료 제출";
+        subTitle.innerText = "이름을 선택하고 파일을 제출해 주세요.";
+        uploadFile.required = true;
+        labelFile.innerText = "제출 자료 (필수)";
+    } else {
+        // both
+        subTitle.innerText = "이름을 선택하고 서명 및 파일을 제출해 주세요.";
+    }
+
+    const namesParam = params.get('n');
+    const nameSelect = document.getElementById('student-name');
+    
+    if (namesParam) {
+        const names = namesParam.split(',');
+        names.forEach(name => {
+            const trimmed = name.trim();
+            if(trimmed !== '') {
+                const option = document.createElement('option');
+                option.value = trimmed;
+                option.textContent = trimmed;
+                nameSelect.appendChild(option);
+            }
+        });
+    } else {
+        // URL에 파라미터가 없으면(직접 접속 시) 텍스트 입력으로 변경해주는 안전장치
+        const wrapper = nameSelect.parentElement;
+        wrapper.innerHTML = '<input type="text" id="student-name" required placeholder="관리자가 명단을 공유하지 않았습니다. 직접 입력하세요.">';
+    }
+});
 
 // --- Google Apps Script 전송 로직 ---
-// 주의: 아래 URL은 혜정샘이 GAS 배포 후 얻은 URL로 교체해야 합니다.
-const GAS_URL = "여기에_구글_Apps_Script_웹앱_URL을_입력하세요";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx06kuxhrgzTklYTw4YqG0rxLhlVa_BUIJ0-EdHq7pPP_sfHRkGB42Xl5susO5g8kEsYA/exec";
 
-document.getElementById('submit-form').addEventListener('submit', async function(e) {
+document.getElementById('submit-form').addEventListener('submit', async function (e) {
     e.preventDefault();
-    
+
     if (GAS_URL === "여기에_구글_Apps_Script_웹앱_URL을_입력하세요") {
         alert("Google Apps Script URL이 설정되지 않았습니다. script.js 파일에서 URL을 수정해주세요.");
         return;
@@ -88,11 +134,12 @@ document.getElementById('submit-form').addEventListener('submit', async function
     const overlay = document.getElementById('loading-overlay');
     overlay.classList.add('show');
 
-    const affiliation = document.getElementById('affiliation').value;
+    // Code.gs 호환성을 위해 affiliation은 빈 값이나 기본값 전송
+    const affiliation = "교직원"; 
     const name = document.getElementById('student-name').value;
     const fileInput = document.getElementById('upload-file');
     const file = fileInput.files[0];
-    
+
     // 서명 이미지 Data URL 추출
     const signatureData = canvas.toDataURL('image/png');
 
@@ -112,7 +159,7 @@ document.getElementById('submit-form').addEventListener('submit', async function
                 reader.onerror = error => reject(error);
                 reader.readAsDataURL(file);
             });
-            
+
             payload.hasFile = true;
             payload.filename = file.name;
             payload.mimeType = file.type;
@@ -128,10 +175,14 @@ document.getElementById('submit-form').addEventListener('submit', async function
         const result = await response.json();
         if (result.status === 'success') {
             alert('성공적으로 등록되었습니다!');
-            // 폼 초기화
-            document.getElementById('affiliation').value = '';
-            document.getElementById('student-name').value = '';
-            fileInput.value = '';
+            // 폼 초기화 (드롭다운 초기화)
+            const nameEl = document.getElementById('student-name');
+            if(nameEl.tagName === 'SELECT') {
+                nameEl.selectedIndex = 0;
+            } else {
+                nameEl.value = '';
+            }
+            if(fileInput) fileInput.value = '';
             clearSignature();
         } else {
             alert('등록 실패: ' + result.message);

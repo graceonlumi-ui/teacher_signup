@@ -1,16 +1,17 @@
 :root {
-    --bg-color: #fdfbf7; /* 따뜻하고 밝은 아이보리/오프화이트 */
-    --panel-bg: #ffffff;
-    --text-primary: #3d3b38; /* 너무 까맣지 않은 부드러운 다크 그레이/브라운 */
-    --text-secondary: #8c857d;
-    --accent: #c4a482; /* 차분하고 따뜻한 베이지/카라멜 톤 */
-    --accent-hover: #ad8c69;
-    --success: #8ba888; /* 따뜻한 세이지 그린 */
-    --border: #f0e9df;
-    --input-bg: #fbf9f5;
-    --shadow: 0 15px 35px -5px rgba(140, 125, 110, 0.1);
-    --border-radius: 20px;
-    --transition: all 0.25s ease;
+    --bg-gradient-start: #f8fafc;
+    --bg-gradient-end: #e2e8f0;
+    --panel-bg: rgba(255, 255, 255, 0.85);
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --accent: #6366f1; /* 세련된 인디고 블루 */
+    --accent-hover: #4f46e5;
+    --border: rgba(203, 213, 225, 0.5);
+    --input-bg: #ffffff;
+    --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.3);
+    --border-radius: 24px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -21,9 +22,7 @@
 
 body {
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-    background-color: var(--bg-color);
-    background-image: radial-gradient(circle at top right, rgba(196, 164, 130, 0.08), transparent 400px),
-                      radial-gradient(circle at bottom left, rgba(139, 168, 136, 0.05), transparent 400px);
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -31,15 +30,19 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    background-attachment: fixed;
 }
 
+/* 프리미엄 글래스모피즘 효과 */
 .app-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 500px;
     background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -49,14 +52,15 @@ body {
     text-align: center;
     padding: 40px 30px 20px;
     border-bottom: 1px solid var(--border);
-    background: #fcfaf8;
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .form-header h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
     margin-bottom: 8px;
     color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
 .form-header p {
@@ -71,80 +75,89 @@ body {
 form {
     display: flex;
     flex-direction: column;
-    gap: 25px;
-}
-
-.input-row {
-    display: flex;
-    gap: 20px;
-}
-
-.input-row .input-group {
-    flex: 1;
-}
-
-@media (max-width: 480px) {
-    .input-row {
-        flex-direction: column;
-        gap: 25px;
-    }
+    gap: 24px;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 label {
     font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-weight: 700;
+    color: var(--text-primary);
     padding-left: 4px;
 }
 
-input[type="text"], input[type="file"] {
+/* 드롭다운 (Select) 및 텍스트 입력 스타일 */
+select, input[type="text"] {
     width: 100%;
     background: var(--input-bg);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 12px;
     padding: 16px;
     color: var(--text-primary);
     font-family: inherit;
     font-size: 1.05rem;
+    font-weight: 500;
     transition: var(--transition);
+    appearance: none; /* 기본 화살표 숨김 */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px top 50%;
+    background-size: 12px auto;
 }
 
-input[type="file"] {
-    padding: 12px;
-    font-size: 0.95rem;
+select:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-glow);
+    background: white;
+}
+
+select:invalid {
     color: var(--text-secondary);
 }
 
-input[type="file"]::file-selector-button {
-    background: white;
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    padding: 8px 16px;
-    border-radius: 6px;
+/* 파일 업로드 스타일 */
+.file-input {
+    width: 100%;
+    background: var(--input-bg);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.file-input:hover {
+    border-color: var(--accent);
+    background: rgba(99, 102, 241, 0.02);
+}
+
+.file-input::file-selector-button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
     margin-right: 15px;
     cursor: pointer;
     font-weight: 600;
     transition: var(--transition);
 }
 
-input[type="file"]::file-selector-button:hover {
-    background: var(--input-bg);
-    border-color: var(--accent);
+.file-input::file-selector-button:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 
-input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(196, 164, 130, 0.2);
-    background: white;
-}
-
+/* 서명 영역 */
 .signature-header {
     display: flex;
     justify-content: space-between;
@@ -156,12 +169,16 @@ input[type="text"]:focus {
     border: none;
     color: var(--text-secondary);
     font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .btn-text:hover {
-    color: var(--accent-hover);
+    color: var(--accent);
+    background: rgba(99, 102, 241, 0.1);
 }
 
 .canvas-wrapper {
@@ -170,10 +187,12 @@ input[type="text"]:focus {
     overflow: hidden;
     border: 2px solid var(--border);
     transition: var(--transition);
+    position: relative;
 }
 
 .canvas-wrapper:focus-within {
     border-color: var(--accent);
+    box-shadow: var(--shadow-glow);
 }
 
 canvas {
@@ -191,7 +210,7 @@ canvas {
     margin-top: -4px;
 }
 
-/* Buttons */
+/* 메인 제출 버튼 */
 .btn {
     border: none;
     border-radius: 12px;
@@ -209,7 +228,7 @@ canvas {
 .btn-primary:hover {
     background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(196, 164, 130, 0.3);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }
 
 .btn-primary:active {
@@ -218,13 +237,14 @@ canvas {
 
 .btn-large {
     padding: 18px;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 800;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 15px;
+    letter-spacing: 0.5px;
 }
 
-/* Overlay & Spinner */
+/* 로딩 오버레이 */
 .overlay {
     position: fixed;
     top: 0;
@@ -232,7 +252,7 @@ canvas {
     width: 100vw;
     height: 100vh;
     background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -251,17 +271,17 @@ canvas {
 .overlay p {
     margin-top: 20px;
     font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--accent-hover);
+    font-weight: 700;
+    color: var(--accent);
 }
 
 .spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid rgba(196, 164, 130, 0.2);
+    border: 4px solid rgba(99, 102, 241, 0.2);
     border-radius: 50%;
     border-top-color: var(--accent);
-    animation: spin 1s ease-in-out infinite;
+    animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 @keyframes spin {
