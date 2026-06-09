@@ -242,9 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
             urlObj.search = `?m=${inputMode.value}&g=${scriptId}&n=${namesParam}`;
             const shareUrl = urlObj.href;
             
-            document.getElementById('share-link').value = shareUrl;
+            const shareLinkInput = document.getElementById('share-link');
+            shareLinkInput.value = "⏳ 짧은 주소로 변환 중...";
 
-            // QR 생성
+            // QR 생성 (가장 안정적인 긴 원본 주소로 생성)
             document.getElementById("qrcode-box").innerHTML = "";
             qrCodeInstance = new QRCode(document.getElementById("qrcode-box"), {
                 text: shareUrl,
@@ -254,9 +255,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.L
             });
+
+            // is.gd JSONP 호출로 URL 단축
+            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+            window[callbackName] = function(data) {
+                if (data && data.shorturl) {
+                    shareLinkInput.value = data.shorturl;
+                } else {
+                    // 단축 실패 시 긴 원본 주소 사용
+                    shareLinkInput.value = shareUrl;
+                }
+                delete window[callbackName];
+            };
+
+            const script = document.createElement('script');
+            script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(shareUrl)}&callback=${callbackName}`;
+            
+            // 네트워크 차단 등 에러 발생 시 처리
+            script.onerror = function() {
+                shareLinkInput.value = shareUrl;
+                delete window[callbackName];
+            };
+            
+            document.body.appendChild(script);
+
         } catch (e) {
-            console.error("URL 조합 중 오류:", e);
-            alert("QR 코드를 생성하는 중 오류가 발생했습니다.");
+            console.error(e);
+            alert("URL 생성 중 오류가 발생했습니다.");
             return;
         }
         
