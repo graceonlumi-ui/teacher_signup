@@ -258,7 +258,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // is.gd JSONP 호출로 URL 단축
             const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+            
+            // 타임아웃 안전장치 (2초 후에도 응답이 없으면 방화벽 차단 등으로 간주하고 원본 표시)
+            const fallbackTimeout = setTimeout(() => {
+                if (shareLinkInput.value === "⏳ 짧은 주소로 변환 중...") {
+                    shareLinkInput.value = shareUrl;
+                    delete window[callbackName];
+                }
+            }, 2000);
+
             window[callbackName] = function(data) {
+                clearTimeout(fallbackTimeout);
                 if (data && data.shorturl) {
                     shareLinkInput.value = data.shorturl;
                 } else {
@@ -271,8 +281,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const script = document.createElement('script');
             script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(shareUrl)}&callback=${callbackName}`;
             
-            // 네트워크 차단 등 에러 발생 시 처리
+            // 네트워크 차단 등 명시적 에러 발생 시 처리
             script.onerror = function() {
+                clearTimeout(fallbackTimeout);
                 shareLinkInput.value = shareUrl;
                 delete window[callbackName];
             };
